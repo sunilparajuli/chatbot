@@ -1,29 +1,33 @@
-// src/components/OfficeInfoManager.jsx
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 export default function OfficeInfoManager() {
+  // MODIFIED: State now matches the bilingual Firestore structure
   const [formData, setFormData] = useState({
-    organizationName: '',
-    welcomeMessage: '',
+    organizationName: { en: '', np: '' },
+    welcomeMessage: { en: '', np: '' },
     logoUrl: ''
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
-  // Path to our single config document
   const configDocRef = doc(db, 'widgetConfig', 'main');
 
-  // Fetch the current config when the component loads
   useEffect(() => {
     const fetchConfig = async () => {
       setLoading(true);
       try {
         const docSnap = await getDoc(configDocRef);
         if (docSnap.exists()) {
-          setFormData(docSnap.data());
+          const data = docSnap.data();
+          // MODIFIED: Ensure the state is populated correctly even if fields are missing in Firestore
+          setFormData({
+            organizationName: data.organizationName || { en: '', np: '' },
+            welcomeMessage: data.welcomeMessage || { en: '', np: '' },
+            logoUrl: data.logoUrl || ''
+          });
         } else {
           console.log("No widget config document found! Will use defaults.");
         }
@@ -34,11 +38,22 @@ export default function OfficeInfoManager() {
       setLoading(false);
     };
     fetchConfig();
-  }, []); // The empty dependency array ensures this runs only once
+  }, []);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  // MODIFIED: Handle changes for nested, bilingual fields
+  const handleTextChange = (field, lang, value) => {
+    setFormData(prev => ({
+        ...prev,
+        [field]: {
+            ...prev[field],
+            [lang]: value
+        }
+    }));
+  };
+
+  // Handle changes for the flat logoUrl field
+  const handleLogoChange = (e) => {
+    setFormData(prev => ({ ...prev, logoUrl: e.target.value }));
   };
 
   const handleSave = async (e) => {
@@ -46,11 +61,9 @@ export default function OfficeInfoManager() {
     setSaving(true);
     setMessage('');
     try {
-      // Using setDoc with merge: true will create the document if it doesn't exist,
-      // or update it if it does, without overwriting other fields.
       await setDoc(configDocRef, formData, { merge: true });
       setMessage('Information saved successfully!');
-      setTimeout(() => setMessage(''), 3000); // Clear message after 3 seconds
+      setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error("Error saving config: ", error);
       setMessage('Error saving information.');
@@ -67,28 +80,52 @@ export default function OfficeInfoManager() {
       <h2>Manage Office Information</h2>
       <p>This information will appear on the chat widget's welcome screen.</p>
       <form onSubmit={handleSave} style={styles.form}>
+        
+        {/* MODIFIED: Bilingual inputs for Organization Name */}
         <div style={styles.formGroup}>
-          <label htmlFor="organizationName">Organization Name</label>
+          <label htmlFor="organizationNameEn">Organization Name (English)</label>
           <input
-            id="organizationName"
-            name="organizationName"
+            id="organizationNameEn"
             type="text"
-            value={formData.organizationName}
-            onChange={handleInputChange}
+            value={formData.organizationName.en}
+            onChange={(e) => handleTextChange('organizationName', 'en', e.target.value)}
             style={styles.input}
           />
         </div>
         <div style={styles.formGroup}>
-          <label htmlFor="welcomeMessage">Welcome Message / Subtitle</label>
+          <label htmlFor="organizationNameNp">Organization Name (Nepali)</label>
+          <input
+            id="organizationNameNp"
+            type="text"
+            value={formData.organizationName.np}
+            onChange={(e) => handleTextChange('organizationName', 'np', e.target.value)}
+            style={styles.input}
+          />
+        </div>
+
+        {/* MODIFIED: Bilingual inputs for Welcome Message */}
+        <div style={styles.formGroup}>
+          <label htmlFor="welcomeMessageEn">Welcome Message (English)</label>
           <textarea
-            id="welcomeMessage"
-            name="welcomeMessage"
-            value={formData.welcomeMessage}
-            onChange={handleInputChange}
+            id="welcomeMessageEn"
+            value={formData.welcomeMessage.en}
+            onChange={(e) => handleTextChange('welcomeMessage', 'en', e.target.value)}
             rows="4"
             style={styles.input}
           />
         </div>
+        <div style={styles.formGroup}>
+          <label htmlFor="welcomeMessageNp">Welcome Message (Nepali)</label>
+          <textarea
+            id="welcomeMessageNp"
+            value={formData.welcomeMessage.np}
+            onChange={(e) => handleTextChange('welcomeMessage', 'np', e.target.value)}
+            rows="4"
+            style={styles.input}
+          />
+        </div>
+
+        {/* This part remains the same as logoUrl is not bilingual */}
         <div style={styles.formGroup}>
           <label htmlFor="logoUrl">Logo Image URL</label>
           <input
@@ -96,12 +133,13 @@ export default function OfficeInfoManager() {
             name="logoUrl"
             type="text"
             value={formData.logoUrl}
-            onChange={handleInputChange}
+            onChange={handleLogoChange}
             placeholder="https://example.com/logo.png"
             style={styles.input}
           />
           {formData.logoUrl && <img src={formData.logoUrl} alt="logo preview" style={styles.logoPreview} />}
         </div>
+
         <button type="submit" disabled={saving} style={styles.saveButton}>
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
