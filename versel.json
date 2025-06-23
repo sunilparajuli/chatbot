@@ -1,5 +1,9 @@
-{
-    "rewrites": [
-        {"source": "/(.*)", "destination": "/"}
+  {
+    "routes": [
+      { "src": "/", "dest": "/" },
+      { "src": "/admin/login", "dest": "/" },
+      { "src": "/admin", "dest": "/" },
+      { "src": "/admin/topics", "dest": "/" },
+      { "src": "/admin/office-info", "dest": "/" }
     ]
-}
+  }
