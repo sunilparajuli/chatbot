@@ -1,9 +1,8 @@
-  {
-    "routes": [
-      { "src": "/", "dest": "/" },
-      { "src": "/admin/login", "dest": "/" },
-      { "src": "/admin", "dest": "/" },
-      { "src": "/admin/topics", "dest": "/" },
-      { "src": "/admin/office-info", "dest": "/" }
-    ]
-  }
+{
+  "rewrites": [
+    {
+      "source": "/((?!api/|.*\\..*).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

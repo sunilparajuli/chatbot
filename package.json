@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:widget": "vite build --config vite.widget.config.js", 
+    "build:all": "npm run build && npm run build:widget",
     "lint": "eslint .",
     "preview": "vite preview"
   },
