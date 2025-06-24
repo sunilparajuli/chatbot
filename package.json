@@ -6,14 +6,18 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:widget": "vite build --config vite.widget.config.js", 
+    "build:widget": "vite build --config vite.widget.config.js",
     "build:all": "npm run build && npm run build:widget",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "@firebase/firestore": "^4.7.17",
+    "@lexical/react": "^0.32.1",
+    "@tiptap/react": "^2.22.3",
+    "@tiptap/starter-kit": "^2.22.3",
     "firebase": "^11.9.1",
+    "lexical": "^0.32.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-firebase-hooks": "^5.1.1",

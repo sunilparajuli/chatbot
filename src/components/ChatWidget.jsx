@@ -25,7 +25,7 @@ export default function ChatWidget() {
     const [chatStatus, setChatStatus] = useState('active');
     const [selectedTopicName, setSelectedTopicName] = useState('');
     const [widgetConfig, setWidgetConfig] = useState({ organizationName: { en: 'Welcome', np: 'स्वागत छ' }, welcomeMessage: { en: 'How can we help you?', np: 'हामी कसरी मद्दत गर्न सक्छौं?' }, logoUrl: '' });
-    
+
     const messagesEndRef = useRef(null);
 
     // --- NEW: Translations Object ---
@@ -128,7 +128,7 @@ export default function ChatWidget() {
         else if (node.leadsToChat) setView('form');
         else setView('navigating');
     };
-    
+
     const goBack = () => {
         const newHistory = history.slice(0, -1);
         const prevNode = newHistory[newHistory.length - 1];
@@ -157,9 +157,9 @@ export default function ChatWidget() {
 
     const NavigationHeader = () => (
         <div style={styles.navHeader}>
-            <button onClick={goBack} style={styles.navButton} aria-label={t.goBack}><FiArrowLeft size={22}/></button>
+            <button onClick={goBack} style={styles.navButton} aria-label={t.goBack}><FiArrowLeft size={22} /></button>
             <h3 style={styles.navTitle}>{currentNode?.name?.[language] || ''}</h3>
-            <button onClick={resetToTopicsScreen} style={styles.navButton} aria-label={t.goHome}><FiHome size={20}/></button>
+            <button onClick={resetToTopicsScreen} style={styles.navButton} aria-label={t.goHome}><FiHome size={20} /></button>
         </div>
     );
 
@@ -167,17 +167,11 @@ export default function ChatWidget() {
         const activeCategory = knowledgeTree.find(cat => cat.id === activeCategoryId);
         const itemsToShow = activeCategory ? activeCategory.children : [];
         return (<>
-            <div style={styles.welcomeHeader}>
-                <div style={styles.welcomeTextContainer}>
-                    <h1 style={styles.welcomeTitle}>{widgetConfig.organizationName?.[language]}</h1>
-                    <p style={styles.welcomeSubtitle}>{widgetConfig.welcomeMessage?.[language]}</p>
-                </div>
-                <img src={widgetConfig.logoUrl} alt="Logo" style={styles.avatar}/>
-            </div>
+           
             <div style={styles.contentArea}>
                 <div style={styles.tabs}>
                     {knowledgeTree.map(category => (
-                        <button key={category.id} style={activeCategoryId === category.id ? {...styles.tab, ...styles.activeTab} : styles.tab} onClick={() => setActiveCategoryId(category.id)}>
+                        <button key={category.id} style={activeCategoryId === category.id ? { ...styles.tab, ...styles.activeTab } : styles.tab} onClick={() => setActiveCategoryId(category.id)}>
                             {category.name?.[language] || category.name}
                         </button>
                     ))}
@@ -194,7 +188,99 @@ export default function ChatWidget() {
         </>);
     };
 
-    const renderNavigationView = () => (
+const renderNavigationView = () => (
+    <div
+        style={{
+            fontFamily: 'Arial, sans-serif', // A standard, readable font
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            backgroundColor: '#f4f5f7', // A light background for the whole view
+        }}
+    >
+        <NavigationHeader />
+        <div
+            style={{
+                overflowY: 'auto',
+                padding: '8px', // A bit more padding for the cards to breathe
+            }}
+        >
+            {/* History items: Larger text, but still visually distinct from cards */}
+            {history.slice(1).map((histNode) => (
+                <div
+                    key={`hist-${histNode.id}`}
+                    style={{
+                        fontSize: '14px', // Larger, readable history text
+                        padding: '4px 8px 8px 8px', // Extra bottom padding
+                        color: '#5e6c84', // A softer, less prominent color
+                    }}
+                >
+                    {histNode.name?.[language] || histNode.name}
+                </div>
+            ))}
+
+            {/* A separator is shown if there's history */}
+            {history.length > 1 && (
+                <hr
+                    style={{
+                        border: 'none',
+                        borderTop: '1px solid #dfe1e6',
+                        margin: '0 4px 10px 4px', // Give space before the first card
+                    }}
+                />
+            )}
+
+            {/* Each child node is now a clickable card */}
+            {currentNode?.children?.map(childNode => (
+                <button
+                    key={childNode.id}
+                    onClick={() => handleNodeSelect(childNode)}
+                    style={{
+                        // --- Card container styles ---
+                        display: 'block',
+                        width: '100%',
+                        background: '#ffffff', // White background for the card
+                        border: '1px solid #dfe1e6', // Subtle border
+                        borderRadius: '6px', // Rounded corners
+                        padding: '10px 12px', // Generous padding inside the card
+                        margin: '6px 0', // Vertical margin to separate cards
+                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)', // Subtle shadow
+                        
+                        // --- Text and interaction styles ---
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        fontSize: '13px', // A clear, readable font size
+                        fontWeight: '500', // Slightly bolder text
+                        color: '#172b4d', // A dark, high-contrast color for text
+                        transition: 'box-shadow 0.2s ease, transform 0.2s ease', // Smooth transition for hover
+                    }}
+                    // --- Interactive hover effect to make the card "lift" ---
+                    onMouseOver={e => {
+                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseOut={e => {
+                        e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
+                        e.currentTarget.style.transform = 'none';
+                    }}
+                >
+                    {childNode.name?.[language] || childNode.name}
+                </button>
+            ))}
+            <div ref={messagesEndRef} />
+        </div>
+    </div>
+);
+
+const renderAnswerView = () => {
+    // This line gets the HTML string from your current node
+    const answerHtml = currentNode.answer?.[language] || currentNode.answer || '';
+
+    // Let's add a console log to be 100% sure the data is correct.
+    // Check your browser's developer console. You should see the raw HTML here.
+    console.log("HTML to be rendered:", answerHtml); 
+
+    return (
         <div style={styles.listContainer}>
             <NavigationHeader />
             <div style={styles.listItemsWrapper}>
@@ -204,36 +290,30 @@ export default function ChatWidget() {
                     </div>
                 ))}
                 {history.length > 1 && <hr style={styles.separator} />}
-                {currentNode?.children?.map(childNode => (
-                    <button key={childNode.id} onClick={() => handleNodeSelect(childNode)} style={styles.listItem}>
-                        {childNode.name?.[language] || childNode.name}
-                    </button>
-                ))}
-                <div ref={messagesEndRef} />
-            </div>
-        </div>
-    );
 
-    const renderAnswerView = () => (
-        <div style={styles.listContainer}>
-            <NavigationHeader />
-            <div style={styles.listItemsWrapper}>
-                {history.slice(1).map((histNode) => (<div key={`hist-${histNode.id}`} style={styles.historyItem}>{histNode.name?.[language] || histNode.name}</div>))}
-                {history.length > 1 && <hr style={styles.separator} />}
-                <div style={styles.answerBox}><p>{currentNode.answer?.[language] || currentNode.answer}</p></div>
+                {/* --- THIS IS THE CRITICAL PART --- */}
+                {/* It uses dangerouslySetInnerHTML to render the HTML string */}
+                <div
+                    style={styles.answerBox}
+                    dangerouslySetInnerHTML={{ __html: answerHtml }}
+                />
+                
             </div>
             <div style={styles.answerFooter}>
                 <p>{t.usefulPrompt}</p>
-                <button onClick={() => setView('form')} style={styles.formButton}>{t.talkToAgent}</button>
+                <button onClick={() => setView('form')} style={styles.formButton}>
+                    {t.talkToAgent}
+                </button>
             </div>
         </div>
     );
+};
 
     const renderLoadingView = () => <div style={styles.centered}><p>{t.loading}</p></div>;
-    const renderErrorView = () => <div style={styles.centered}><p style={{color: 'red'}}>{t.error}</p></div>;
+    const renderErrorView = () => <div style={styles.centered}><p style={{ color: 'red' }}>{t.error}</p></div>;
     const renderRegistrationForm = () => <div style={styles.listContainer}><NavigationHeader /><div style={styles.centered}><h2>{t.startLiveChat}</h2><p>{t.topic} <strong>{selectedTopicName}</strong></p><form onSubmit={startChat} style={styles.form}><input style={styles.formInput} type="text" placeholder={t.yourName} value={name} onChange={e => setName(e.target.value)} required /><input style={styles.formInput} type="email" placeholder={t.yourEmail} value={email} onChange={e => setEmail(e.target.value)} required /><button type="submit" style={styles.formButton}>{t.startChatting}</button></form></div></div>;
     const renderChatEndedView = () => <div style={styles.centered}><h3>{t.chatEnded}</h3><p>{t.chatClosed}</p><button onClick={resetToTopicsScreen} style={styles.formButton}>{t.startNewChat}</button></div>;
-    const renderChatView = () => ( <div style={styles.messagesContainer}>{messages.map((m, i) => { if (m.sender === 'system') { return <div key={i} style={styles.systemMessage}>{m.text}</div>; } return ( <div key={i} style={{...styles.messageRow, justifyContent: m.sender === 'customer' ? 'flex-end' : 'flex-start'}}><div style={{...styles.messageBubble, ...(m.sender === 'customer' ? styles.customerMessage : styles.supportMessage)}}>{m.text}</div></div> ); })}<div ref={messagesEndRef} /></div> );
+    const renderChatView = () => (<div style={styles.messagesContainer}>{messages.map((m, i) => { if (m.sender === 'system') { return <div key={i} style={styles.systemMessage}>{m.text}</div>; } return (<div key={i} style={{ ...styles.messageRow, justifyContent: m.sender === 'customer' ? 'flex-end' : 'flex-start' }}><div style={{ ...styles.messageBubble, ...(m.sender === 'customer' ? styles.customerMessage : styles.supportMessage) }}>{m.text}</div></div>); })}<div ref={messagesEndRef} /></div>);
 
     const renderContent = () => {
         if (chatStatus === 'ended') return renderChatEndedView();
@@ -249,28 +329,72 @@ export default function ChatWidget() {
         }
     };
 
-    return (
-        <>
-            <button onClick={toggleChat} style={styles.chatBubble} aria-label={t.toggleChat}>{isOpen ? <FiX size={24} /> : <FiMessageSquare size={24} />}</button>
-            {isOpen && (
-                <div style={styles.widgetContainer}>
-                    <div style={styles.topBar}>
-                        <span style={styles.topBarTitle}>{t.supportCenter}</span>
-                        <div style={styles.topBarActions}>
-                            <button onClick={toggleLanguage} style={styles.langButton}>
-                                {language.toUpperCase()}
-                            </button>
-                            <button onClick={toggleChat} style={styles.closeButton} aria-label={t.closeChat}><FiX size={20} /></button>
-                        </div>
-                    </div>
-                    <div style={styles.mainContentContainer}>
-                        {renderContent()}
-                    </div>
-                    {view === "chat" && chatStatus === 'active' && (<form onSubmit={sendMessage} style={styles.inputArea}><input style={styles.chatInput} placeholder={t.typeQuery} value={message} onChange={e => setMessage(e.target.value)} /><button type="submit" style={styles.sendButton} aria-label={t.sendMessage}><FiSend size={20} /></button></form>)}
-                </div>
-            )}
-        </>
-    );
+return (
+  <>
+    <button onClick={toggleChat} style={styles.chatBubble} aria-label={t.toggleChat}>
+      {isOpen ? <FiX size={24} /> : <FiMessageSquare size={24} />}
+    </button>
+
+    {isOpen && (
+      <div style={styles.widgetContainer}>
+        <div
+          style={{
+            ...styles.topBar,
+            display: "flex",
+            alignItems: "center",
+            backgroundColor: "lightblue",
+            padding: "2px",
+            borderRadius: "6px",
+            justifyContent: "space-between",
+          }}
+        >
+          {/* Left side: logo + org name */}
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <img
+              src={widgetConfig.logoUrl}
+              alt="Logo"
+              style={{ width: "40px", height: "40px", marginRight: "10px" }}
+            />
+            <span style={{ fontSize: "16px" }}>
+              {widgetConfig.organizationName?.[language]}
+            </span>
+          </div>
+
+          {/* Right side: language selector + close button */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <button onClick={toggleLanguage} style={styles.langButton}>
+              {language.toUpperCase()}
+            </button>
+            <button
+              onClick={toggleChat}
+              style={styles.closeButton}
+              aria-label={t.closeChat}
+            >
+              <FiX size={20} />
+            </button>
+          </div>
+        </div>
+
+        <div style={styles.mainContentContainer}>{renderContent()}</div>
+
+        {view === "chat" && chatStatus === "active" && (
+          <form onSubmit={sendMessage} style={styles.inputArea}>
+            <input
+              style={styles.chatInput}
+              placeholder={t.typeQuery}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+            <button type="submit" style={styles.sendButton} aria-label={t.sendMessage}>
+              <FiSend size={20} />
+            </button>
+          </form>
+        )}
+      </div>
+    )}
+  </>
+);
+
 }
 
 // --- ALL STYLES MERGED ---
